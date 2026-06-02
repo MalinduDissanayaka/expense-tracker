@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 
 interface ExpenseFormProps {
   onExpenseAdded: () => void;
@@ -13,21 +15,40 @@ export default function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !amount) return alert('කරුණාකර සියලුම විස්තර පුරවන්න!');
+    if (!title || !amount) return alert('Please fill in all details!');
 
     setLoading(true);
+
+    // 1. Get the currently logged-in user details from Supabase Session
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert('User session not found. Please log in again.');
+      setLoading(false);
+      return;
+    }
+
+    // 2. Insert the expense into the database along with the user's unique ID
     const { error } = await supabase
       .from('expenses')
-      .insert([{ title, amount: parseFloat(amount), category }]);
+      .insert([
+        { 
+          title, 
+          amount: parseFloat(amount), 
+          category,
+          user_id: user.id // Linking the expense to the authenticated user
+        }
+      ]);
+
     setLoading(false);
 
     if (error) {
       console.error(error);
-      alert('දත්ත ඇතුළත් කිරීමේදී දෝෂයක් සිදුවුණා!');
+      alert('An error occurred while saving data!');
     } else {
       setTitle('');
       setAmount('');
-      onExpenseAdded(); // page.tsx එකට කියනවා ලිස්ට් එක refresh කරන්න කියලා
+      onExpenseAdded(); // Notify parent component to refresh the list
     }
   };
 
@@ -36,17 +57,17 @@ export default function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
       <h1 className="text-xl font-bold mb-6 text-center text-blue-600">Add New Expense</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Expense Title (වියදම)</label>
+          <label className="block text-sm font-medium mb-1">Expense Title</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border rounded-md"
-            placeholder="උදා: Rice & Curry, Bus Fare"
+            placeholder="e.g., Rice & Curry, Bus Fare"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Amount (මුදල Rs.)</label>
+          <label className="block text-sm font-medium mb-1">Amount (Rs.)</label>
           <input
             type="number"
             value={amount}
@@ -56,7 +77,7 @@ export default function ExpenseForm({ onExpenseAdded }: ExpenseFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Category (වර්ගය)</label>
+          <label className="block text-sm font-medium mb-1">Category</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}

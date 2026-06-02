@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
+import { useRouter } from 'next/navigation';
 import TotalExpenseCard from '../components/TotalExpenseCard';
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseList from '../components/ExpenseList';
-import ExpenseFilters from '../components/ExpenseFilters'; // 👈 අලුත් Component එක Import කරා
+import ExpenseFilters from '../components/ExpenseFilters';
 
 interface Expense {
   id: number;
@@ -13,19 +14,39 @@ interface Expense {
   amount: number;
   category: string;
   date: string;
+  user_id: string;
 }
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  
-  // Filters සඳහා State දෙකක් හදාගමු
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedMonth, setSelectedMonth] = useState('All');
+  const router = useRouter();
 
-  const fetchExpenses = async () => {
+  // Check user authentication status on load
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Redirect to login if user is not authenticated
+        router.push('/login');
+      } else {
+        setUser(user);
+        fetchExpenses(user.id);
+      }
+      setAuthLoading(false);
+    };
+    checkUser();
+  }, [router]);
+
+  // Fetch expenses belonging only to the logged-in user
+  const fetchExpenses = async (userId: string) => {
     const { data, error } = await supabase
       .from('expenses')
       .select('*')
+      .eq('user_id', userId) // Filter by current user ID
       .order('id', { ascending: false });
 
     if (error) {
@@ -35,32 +56,50 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
+  // Handle Logout
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
-  // 💡 මෙන්න මෙතනදී තමයි යූසර් තෝරන Filter එක අනුව දත්ත ටික පෙරා ගන්නේ (Filtering Logic)
+  // Filtering Logic based on user selection
   const filteredExpenses = expenses.filter((exp) => {
-    // 1. Category එක ගැලපෙනවාද බලන්න
     const matchesCategory = selectedCategory === 'All' || exp.category === selectedCategory;
-    
-    // 2. මාසය ගැලපෙනවාද බලන්න (exp.date එකෙන් 'YYYY-MM-DD' මැද තියෙන MM කෑල්ල ගන්නවා)
     const expenseMonth = exp.date ? exp.date.split('-')[1] : '';
     const matchesMonth = selectedMonth === 'All' || expenseMonth === selectedMonth;
-
     return matchesCategory && matchesMonth;
   });
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-lg font-medium text-gray-600">Loading Session...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="flex flex-col items-center justify-start min-h-screen p-6 bg-gray-100 text-gray-800 gap-6">
       
-      {/* 💳 Total Expense Card එකට දෙන්නේ Filter වෙච්ච ලිස්ට් එක (එතකොට Total එකත් Filter එකට අනුව වෙනස් වෙනවා) */}
+      {/* Header with User Info and Logout Button */}
+      <div className="w-full max-w-md flex justify-between items-center bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div className="overflow-hidden mr-2">
+          <p className="text-xs text-gray-400">Logged in as:</p>
+          <p className="text-sm font-semibold text-gray-700 truncate" title={user?.email}>{user?.email}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors whitespace-nowrap"
+        >
+          Logout
+        </button>
+      </div>
+
       <TotalExpenseCard expenses={filteredExpenses} />
 
-      {/* 📝 Expense Input Form */}
-      <ExpenseForm onExpenseAdded={fetchExpenses} />
+      {/* Pass fetchExpenses with userId so the form knows how to refresh */}
+      <ExpenseForm onExpenseAdded={() => fetchExpenses(user.id)} />
 
-      {/* 🔍 FEATURE: Expense Filters Component */}
       <ExpenseFilters 
         selectedCategory={selectedCategory} 
         setSelectedCategory={setSelectedCategory}
@@ -68,8 +107,7 @@ export default function Home() {
         setSelectedMonth={setSelectedMonth}
       />
 
-      {/* 📋 Expense List එකටත් දෙන්නේ Filter වෙච්ච ලිස්ට් එක */}
-      <ExpenseList expenses={filteredExpenses} onExpenseDeleted={fetchExpenses} />
+      <ExpenseList expenses={filteredExpenses} onExpenseDeleted={() => fetchExpenses(user.id)} />
     </main>
   );
 }
