@@ -14,7 +14,6 @@ export default function ExpenseFilters({
   setSelectedMonth,
 }: ExpenseFiltersProps) {
   
-  // මාස ටික ලිස්ට් එකක් විදියට ගමු (HTML select එකට දාන්න)
   const months = [
     { value: 'All', label: 'සියලුම මාස (All Months)' },
     { value: '01', label: 'January' },
@@ -32,43 +31,49 @@ export default function ExpenseFilters({
   ];
 
   return (
-    <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-md flex gap-4">
+    <div className="w-full p-4 bg-white rounded-lg shadow-md flex gap-4 border border-gray-200">
+      
       {/* Category Filter */}
       <div className="flex-1">
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
           Category Filter
         </label>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full p-2 border rounded-md bg-gray-50 text-sm font-medium"
-        >
-          <option value="All">All Categories</option>
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <option value="Bills">Bills</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Other">Other</option>
-        </select>
+        <div className="relative">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full p-2.5 border border-gray-300 rounded-md bg-white text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All" className="bg-white text-gray-900 font-medium">All Categories</option>
+            <option value="Food" className="bg-white text-gray-900 font-medium">Food</option>
+            <option value="Transport" className="bg-white text-gray-900 font-medium">Transport</option>
+            <option value="Bills" className="bg-white text-gray-900 font-medium">Bills</option>
+            <option value="Entertainment" className="bg-white text-gray-900 font-medium">Entertainment</option>
+            <option value="Other" className="bg-white text-gray-900 font-medium">Other</option>
+          </select>
+        </div>
       </div>
 
       {/* Month Filter */}
       <div className="flex-1">
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
           Month Filter
         </label>
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="w-full p-2 border rounded-md bg-gray-50 text-sm font-medium"
-        >
-          {months.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="w-full p-2.5 border border-gray-300 rounded-md bg-white text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {months.map((m) => (
+              <option key={m.value} value={m.value} className="bg-white text-gray-900 font-medium">
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
+
     </div>
   );
 }
