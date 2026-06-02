@@ -79,27 +79,14 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-screen p-6 bg-gray-100 text-gray-800 gap-6">
-      
-      {/* Header with User Info and Logout Button */}
-      <div className="w-full max-w-md flex justify-between items-center bg-white p-4 rounded-lg shadow-md border border-gray-200">
-        <div className="overflow-hidden mr-2">
-          <p className="text-xs text-gray-400">Logged in as:</p>
-          <p className="text-sm font-semibold text-gray-700 truncate" title={user?.email}>{user?.email}</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors whitespace-nowrap"
-        >
-          Logout
-        </button>
-      </div>
-
+    <main className="flex flex-col items-center justify-start p-6 text-gray-800 gap-6 max-w-4xl mx-auto">
+      {/* Total Expense Card Component */}
       <TotalExpenseCard expenses={filteredExpenses} />
 
-      {/* Pass fetchExpenses with userId so the form knows how to refresh */}
+      {/* Expense Input Form Component */}
       <ExpenseForm onExpenseAdded={() => fetchExpenses(user.id)} />
 
+      {/* Expense Filters Component */}
       <ExpenseFilters 
         selectedCategory={selectedCategory} 
         setSelectedCategory={setSelectedCategory}
@@ -107,6 +94,7 @@ export default function Home() {
         setSelectedMonth={setSelectedMonth}
       />
 
+      {/* Expense List Component */}
       <ExpenseList expenses={filteredExpenses} onExpenseDeleted={() => fetchExpenses(user.id)} />
     </main>
   );
