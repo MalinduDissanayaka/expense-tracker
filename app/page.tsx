@@ -30,7 +30,6 @@ export default function Home() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Redirect to login if user is not authenticated
         router.push('/login');
       } else {
         setUser(user);
@@ -46,7 +45,7 @@ export default function Home() {
     const { data, error } = await supabase
       .from('expenses')
       .select('*')
-      .eq('user_id', userId) // Filter by current user ID
+      .eq('user_id', userId)
       .order('id', { ascending: false });
 
     if (error) {
@@ -54,12 +53,6 @@ export default function Home() {
     } else {
       setExpenses(data || []);
     }
-  };
-
-  // Handle Logout
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
   };
 
   // Filtering Logic based on user selection
@@ -72,30 +65,61 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen">
         <p className="text-lg font-medium text-gray-600">Loading Session...</p>
       </div>
     );
   }
 
   return (
-    <main className="flex flex-col items-center justify-start p-6 text-gray-800 gap-6 max-w-4xl mx-auto">
-      {/* Total Expense Card Component */}
-      <TotalExpenseCard expenses={filteredExpenses} />
+    <main className="p-6 max-w-6xl mx-auto flex flex-col gap-6">
+      {/* Welcome & Introduction Banner */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Financial Dashboard</h1>
+          <p className="text-xs text-gray-400 mt-1">Welcome back! Manage and review your daily expenditures efficiently.</p>
+        </div>
+        <div className="bg-blue-50 px-4 py-2 rounded-md border border-blue-100 max-w-xs truncate">
+          <span className="text-[10px] text-blue-500 font-bold uppercase block tracking-wider">Active Account</span>
+          <span className="text-sm font-semibold text-gray-700 truncate block" title={user?.email}>{user?.email}</span>
+        </div>
+      </div>
 
-      {/* Expense Input Form Component */}
-      <ExpenseForm onExpenseAdded={() => fetchExpenses(user.id)} />
+      {/* 🚀 TWO-COLUMN GRID LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* LEFT COLUMN: Controls & Input (Occupies 5 columns on large screens) */}
+        <div className="lg:col-span-5 flex flex-col gap-6 w-full">
+          {/* Expense Input Form Card */}
+          <div className="w-full">
+            <ExpenseForm onExpenseAdded={() => fetchExpenses(user.id)} />
+          </div>
+          
+          {/* Filters Card */}
+          <div className="w-full">
+            <ExpenseFilters 
+              selectedCategory={selectedCategory} 
+              setSelectedCategory={setSelectedCategory}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+            />
+          </div>
+        </div>
 
-      {/* Expense Filters Component */}
-      <ExpenseFilters 
-        selectedCategory={selectedCategory} 
-        setSelectedCategory={setSelectedCategory}
-        selectedMonth={selectedMonth}
-        setSelectedMonth={setSelectedMonth}
-      />
+        {/* RIGHT COLUMN: Summary & History (Occupies 7 columns on large screens) */}
+        <div className="lg:col-span-7 flex flex-col gap-6 w-full">
+          {/* Total Summary Card */}
+          <div className="w-full">
+            <TotalExpenseCard expenses={filteredExpenses} />
+          </div>
 
-      {/* Expense List Component */}
-      <ExpenseList expenses={filteredExpenses} onExpenseDeleted={() => fetchExpenses(user.id)} />
+          {/* Expense History List Card (Custom styled wrapper to control structure) */}
+          <div className="w-full shadow-md bg-white rounded-lg border border-gray-100 overflow-hidden">
+            <ExpenseList expenses={filteredExpenses} onExpenseDeleted={() => fetchExpenses(user.id)} />
+          </div>
+        </div>
+
+      </div>
     </main>
   );
 }

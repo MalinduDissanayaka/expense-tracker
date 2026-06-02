@@ -29,7 +29,7 @@ export default function ExpenseList({ expenses, onExpenseDeleted }: ExpenseListP
   };
 
   return (
-    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+    <div className="p-6">
       <h2 className="text-lg font-bold mb-4 text-gray-700 border-b pb-2">වියදම් ලැයිස්තුව (History)</h2>
       
       {expenses.length === 0 ? (
