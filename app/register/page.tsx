@@ -5,18 +5,18 @@ import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Supabase Sign In API call
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Supabase Sign Up API call
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -26,17 +26,17 @@ export default function Login() {
     if (error) {
       alert(error.message);
     } else {
-      // If login successful, redirect to dashboard or home
-      router.push('/');
+      alert('Registration successful! Please check your email for confirmation or login.');
+      router.push('/login');
     }
   };
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6 text-gray-800">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Welcome Back</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Create Account</h1>
         
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email Address</label>
             <input
@@ -64,14 +64,14 @@ export default function Login() {
             disabled={loading}
             className="w-full p-2 mt-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 font-medium"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Registering...' : 'Sign Up'}
           </button>
         </form>
 
         <p className="text-sm text-center mt-4 text-gray-600">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Register here
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Login here
           </Link>
         </p>
       </div>
