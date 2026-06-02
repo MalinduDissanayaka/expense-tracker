@@ -15,7 +15,7 @@ export default function ExpenseFilters({
 }: ExpenseFiltersProps) {
   
   const months = [
-    { value: 'All', label: 'සියලුම මාස (All Months)' },
+    { value: 'All', label: 'All Months' },
     { value: '01', label: 'January' },
     { value: '02', label: 'February' },
     { value: '03', label: 'March' },
