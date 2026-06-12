@@ -67,7 +67,7 @@ export default function Analytics() {
       }
     });
 
-    // Format data for Recharts componentts
+    // Format data for Recharts componenttssh
     return Object.keys(categoryTotals)
       .map((key) => ({
         name: key,
